@@ -1,3 +1,5 @@
+// src/components/MessageForm.js
+
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
@@ -5,7 +7,7 @@ function MessageForm() {
   const [messageFrom, setMessageFrom] = useState("");
   const [content, setContent] = useState("");
   const [messages, setMessages] = useState([]);
-  const [responseMessages, setResponseMessages] = useState([]);
+  const [serverResponse, setServerResponse] = useState("");
 
   useEffect(() => {
     fetchMessages();
@@ -13,179 +15,175 @@ function MessageForm() {
 
   const fetchMessages = async () => {
     try {
-      const response = await axios.get("http://127.0.0.1:8000/api/messages/");
-      setMessages(response.data);
+      const res = await axios.get("http://localhost:8000/api/messages/");
+      setMessages(res.data);
     } catch (error) {
-      console.error("❌ Failed to fetch messages:", error);
+      console.error("Failed to fetch messages", error);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
-      const response = await axios.post("http://127.0.0.1:8000/api/sms/", {
+      const res = await axios.post("http://localhost:8000/api/sms/", {
         message_from: messageFrom,
-        message_to: "22141",
-        content: content,
-        direction: "INCOMING"
+        content,
       });
 
-      console.log("✅ Message sent:", response.data);
-      setMessageFrom("");
+      console.log("📥 Backend response:", res.data); // Debug log
+      setServerResponse(res.data.response); // <-- Ensure this matches Django key
       setContent("");
-      setResponseMessages(response.data.responses || []);
-      fetchMessages(); // Refresh recent messages
+      fetchMessages();
     } catch (error) {
-      console.error("❌ Error sending message:", error);
-      setResponseMessages(["Failed to send message."]);
+      console.error("❌ Failed to send SMS:", error.response?.data || error.message);
+      setServerResponse("❌ Failed: " + (error.response?.data?.error || error.message));
+    }
+  };
+
+  const getDynamicHint = () => {
+    const lower = content.toLowerCase();
+    if (lower.startsWith("start#")) {
+      return "Format: start#Jane Doe#25#Female#Nairobi#Westlands";
+    } else if (lower.startsWith("details#")) {
+      return "Format: details#Graduate#Teacher#Single#Christian#Kamba";
+    } else if (lower.startsWith("myself#")) {
+      return "Format: myself#I am adventurous and kind.";
+    } else if (lower.startsWith("match#")) {
+      return "Format: match#25-30#Nairobi";
+    } else if (lower.startsWith("describe#")) {
+      return "Format: describe#07XXXXXXXX";
+    } else if (lower === "yes" || lower === "yes#") {
+      return "Reply YES to accept the interest and receive full profile.";
+    } else if (/^07\d{8}$/.test(lower)) {
+      return "Enter a number to request that profile.";
+    } else {
+      return "e.g. start#Jane Doe#25#Female#Nairobi#Westlands";
     }
   };
 
   return (
-    <div
-      style={{
-        maxWidth: "800px",
-        margin: "0 auto",
-        padding: "30px",
-        background: "#85111115",
-        borderRadius: "15px",
-        boxShadow: "0 0 15px rgba(22, 8, 10, 0.5)",
-        fontFamily: "'Segoe UI', sans-serif",
-      }}
-    >
-      <h2 style={{ color: "#c71585", marginBottom: "20px" }}>💌 Send a Love Message</h2>
+    <div style={{ padding: "20px", background: "#fff5f5", minHeight: "100vh" }}>
+      <h2 style={{ color: "#b30000", marginBottom: "20px" }}>📨 Send SMS Command</h2>
 
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: "15px" }}>
-          <label style={{ display: "block", marginBottom: "6px", fontWeight: "bold" }}>
-            Your Phone Number
-          </label>
-          <input
-            type="text"
-            value={messageFrom}
-            onChange={(e) => setMessageFrom(e.target.value)}
-            required
-            placeholder="07XXXXXXXX"
-            style={{
-              width: "100%",
-              padding: "10px",
-              border: "1px solid #0b0203ff",
-              borderRadius: "10px",
-              outlineColor: "#040bd2ff",
-            }}
-          />
-        </div>
-
-        <div style={{ marginBottom: "15px" }}>
-          <label style={{ display: "block", marginBottom: "6px", fontWeight: "bold" }}>
-            Message Content
-          </label>
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            rows={4}
-            required
-            placeholder="start#Jane Doe#28#female#Nairobi#Westlands"
-            style={{
-              width: "100%",
-              padding: "10px",
-              border: "1px solid #9e056bff",
-              borderRadius: "10px",
-              outlineColor: "#d6336c",
-            }}
-          />
-        </div>
-
+      <form onSubmit={handleSubmit} style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginBottom: "10px" }}>
+        <input
+          type="text"
+          placeholder="Sender's phone number"
+          value={messageFrom}
+          onChange={(e) => setMessageFrom(e.target.value)}
+          required
+          style={{
+            flex: "1 1 200px",
+            padding: "10px",
+            borderRadius: "5px",
+            border: "1px solid #ccc",
+          }}
+        />
+        <input
+          type="text"
+          placeholder={getDynamicHint()}
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          required
+          style={{
+            flex: "2 1 400px",
+            padding: "10px",
+            borderRadius: "5px",
+            border: "1px solid #ccc",
+          }}
+        />
         <button
           type="submit"
           style={{
-            backgroundColor: "#000000ff",
-            color: "white",
-            padding: "10px 20px",
+            backgroundColor: "#e63946",
+            color: "#fff",
             border: "none",
-            borderRadius: "10px",
+            borderRadius: "5px",
+            padding: "10px 20px",
             cursor: "pointer",
-            fontWeight: "bold",
-            fontSize: "16px",
           }}
         >
-           👆 Click here to send Message
+          Send
         </button>
       </form>
 
-      {responseMessages.length > 0 && (
+      {/* Dynamic Format Hint */}
+      <div
+        style={{
+          background: "#ffe6e6",
+          border: "1px solid #ffcccc",
+          borderRadius: "6px",
+          padding: "10px",
+          fontSize: "13px",
+          marginBottom: "15px",
+          color: "#5a0000",
+        }}
+      >
+        <strong>Format Hint:</strong> {getDynamicHint()}
+      </div>
+
+      {/* Server Response Box */}
+      {serverResponse && (
         <div
           style={{
-            marginTop: "25px",
-            padding: "15px",
-            background: "#000000ff",
-            border: "1px solid #ffc0cb",
-            borderRadius: "12px",
-            boxShadow: "0 0 8px rgba(255, 182, 193, 0.3)",
+            backgroundColor: "#e6f4ea",
+            color: "#0b5134",
+            border: "1px solid #b4dfc5",
+            borderRadius: "6px",
+            padding: "12px",
+            marginBottom: "25px",
+            whiteSpace: "pre-wrap",
+            lineHeight: "1.6",
           }}
         >
-          <strong style={{ color: "#d6336c" }}>📩 Server Response:</strong>
-          <ul style={{ marginTop: "10px" }}>
-            {responseMessages.map((msg, idx) => (
-              <li key={idx} style={{ padding: "5px 0" }}>
-                {msg}
-              </li>
-            ))}
-          </ul>
+          <strong>📩 Server Response:</strong><br />
+          {serverResponse}
         </div>
       )}
 
-      <h3 style={{ marginTop: "40px", color: "#c71585" }}>📜 Recent Messages</h3>
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          marginTop: "15px",
-          background: "#fff",
-          borderRadius: "10px",
-          overflow: "hidden",
-          boxShadow: "0 0 10px rgba(221, 160, 221, 0.2)",
-        }}
-      >
-        <thead style={{ backgroundColor: "#15050bff" }}>
-          <tr>
-            <th style={tableHeaderStyle}>From</th>
-            <th style={tableHeaderStyle}>To</th>
-            <th style={tableHeaderStyle}>Content</th>
-            <th style={tableHeaderStyle}>Direction</th>
-            <th style={tableHeaderStyle}>Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {messages.map((msg, index) => (
-            <tr key={index}>
-              <td style={tableCellStyle}>{msg.message_from}</td>
-              <td style={tableCellStyle}>{msg.message_to}</td>
-              <td style={tableCellStyle}>{msg.content}</td>
-              <td style={tableCellStyle}>{msg.direction}</td>
-              <td style={tableCellStyle}>{new Date(msg.date_created).toLocaleString()}</td>
+      {/* Message Table */}
+      <div style={{ overflowX: "auto" }}>
+        <h3 style={{ marginBottom: "10px", color: "#8B0000" }}>📋 Message Log</h3>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr style={{ backgroundColor: "#ffcccc" }}>
+              <th style={tableHeaderStyle}>Direction</th>
+              <th style={tableHeaderStyle}>From</th>
+              <th style={tableHeaderStyle}>To</th>
+              <th style={tableHeaderStyle}>Content</th>
+              <th style={tableHeaderStyle}>Date</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {messages.map((msg) => (
+              <tr key={msg.id}>
+                <td style={tableCellStyle}>{msg.direction}</td>
+                <td style={tableCellStyle}>{msg.message_from}</td>
+                <td style={tableCellStyle}>{msg.message_to}</td>
+                <td style={tableCellStyle}>{msg.content}</td>
+                <td style={tableCellStyle}>
+                  {new Date(msg.date_created).toLocaleString()}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
 
-// 💖 Shared styles
+// Table styling
 const tableHeaderStyle = {
   padding: "10px",
-  borderBottom: "2px solid #ffc0cb",
-  fontWeight: "bold",
-  color: "#c71585",
+  borderBottom: "2px solid #ccc",
   textAlign: "left",
+  color: "#b30000",
 };
 
 const tableCellStyle = {
   padding: "10px",
-  borderBottom: "1px solid #000000ff",
+  borderBottom: "1px solid #eee",
 };
 
 export default MessageForm;
-

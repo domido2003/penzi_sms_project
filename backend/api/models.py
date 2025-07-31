@@ -1,5 +1,3 @@
-#from .models import User, Message, MatchTracking
-
 from django.db import models
 
 class User(models.Model):
@@ -18,6 +16,8 @@ class User(models.Model):
     ethnicity = models.CharField(max_length=100, null=True, blank=True)
     self_description = models.TextField(null=True, blank=True)
 
+    date_created = models.DateTimeField(null=True, blank=True)
+
     class Meta:
         db_table = 'users'
         managed = False
@@ -31,8 +31,8 @@ class Message(models.Model):
     date_created = models.DateTimeField()
 
     class Meta:
-        managed = False
         db_table = 'messages'
+        managed = False
 
 
 class MatchTracking(models.Model):

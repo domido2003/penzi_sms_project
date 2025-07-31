@@ -1,55 +1,72 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
-const Messages = () => {
-  const [message, setMessage] = useState('');
-  const [recipient, setRecipient] = useState('');
+function Messages() {
+  const [messages, setMessages] = useState([]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  useEffect(() => {
+    fetchMessages();
+  }, []);
+
+  const fetchMessages = async () => {
     try {
-      await axios.post('http://127.0.0.1:8000/api/messages/', {
-        message_to: recipient,
-        content: message,
-        direction: 'outgoing',  // assuming this is for outgoing messages
-      });
-      alert("Message sent!");
-      setMessage('');
-      setRecipient('');
-    } catch (err) {
-      console.error(err);
-      alert("Failed to send message.");
+      const response = await axios.get("http://127.0.0.1:8000/api/messages/");
+      setMessages(response.data);
+    } catch (error) {
+      console.error("❌ Failed to fetch messages:", error);
     }
   };
 
   return (
-    <div className="container mt-4">
-      <h3>Send a Message</h3>
-      <form onSubmit={handleSubmit}>
-        <div className="mb-3">
-          <label>Recipient Phone Number</label>
-          <input
-            type="text"
-            className="form-control"
-            value={recipient}
-            onChange={(e) => setRecipient(e.target.value)}
-            required
-          />
-        </div>
-        <div className="mb-3">
-          <label>Message</label>
-          <textarea
-            className="form-control"
-            rows="3"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            required
-          ></textarea>
-        </div>
-        <button type="submit" className="btn btn-primary">Send</button>
-      </form>
+    <div style={{ padding: "30px" }}>
+      <h2 style={{ color: "#c71585", marginBottom: "20px" }}>📜 All Messages</h2>
+
+      <table
+        style={{
+          width: "100%",
+          borderCollapse: "collapse",
+          background: "#fff",
+          borderRadius: "10px",
+          overflow: "hidden",
+          boxShadow: "0 0 10px rgba(221, 160, 221, 0.2)",
+        }}
+      >
+        <thead style={{ backgroundColor: "#15050bff" }}>
+          <tr>
+            <th style={tableHeaderStyle}>From</th>
+            <th style={tableHeaderStyle}>To</th>
+            <th style={tableHeaderStyle}>Content</th>
+            <th style={tableHeaderStyle}>Direction</th>
+            <th style={tableHeaderStyle}>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {messages.map((msg, index) => (
+            <tr key={index}>
+              <td style={tableCellStyle}>{msg.message_from}</td>
+              <td style={tableCellStyle}>{msg.message_to}</td>
+              <td style={tableCellStyle}>{msg.content}</td>
+              <td style={tableCellStyle}>{msg.direction}</td>
+              <td style={tableCellStyle}>{new Date(msg.date_created).toLocaleString()}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
+}
+
+const tableHeaderStyle = {
+  padding: "10px",
+  borderBottom: "2px solid #ffc0cb",
+  fontWeight: "bold",
+  color: "#c71585",
+  textAlign: "left",
+};
+
+const tableCellStyle = {
+  padding: "10px",
+  borderBottom: "1px solid #000000ff",
 };
 
 export default Messages;

@@ -1,0 +1,94 @@
+.app {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.sidebar {
+  width: 220px;
+  background-color: #121212;
+  color: white;
+}
+
+.main-content {
+  flex: 1;
+  background-color: #fff;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* Styles reused by MessageForm */
+.message-header {
+  font-size: 20px;
+  font-weight: bold;
+  color: #e63946;
+  margin-bottom: 20px;
+}
+
+.message-list {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.message-bubble {
+  max-width: 60%;
+  margin-bottom: 12px;
+  padding: 10px 15px;
+  border-radius: 18px;
+  font-size: 14px;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.inbound {
+  align-self: flex-start;
+  background-color: #f1f1f1;
+}
+
+.outbound {
+  align-self: flex-end;
+  background-color: #e63946;
+  color: #fff;
+}
+
+.timestamp {
+  font-size: 11px;
+  color: #999;
+  margin-top: 5px;
+  display: block;
+  text-align: right;
+}
+
+.message-form {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.message-form input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 20px;
+  border: 1px solid #ccc;
+}
+
+.message-form button {
+  background-color: #e63946;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+@media screen and (max-width: 768px) {
+  .user-table {
+    display: none !important;
+  }
+
+  .card-container {
+    display: block !important;
+  }
+}

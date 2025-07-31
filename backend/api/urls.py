@@ -1,8 +1,8 @@
 from django.urls import path
-from .views import sms_handler, message_list_create, list_users
+from . import views
 
 urlpatterns = [
-    path("sms/", sms_handler),  # Already working
-    path("messages/", message_list_create),  
-    path("users/", list_users),
+    path("messages/", views.message_list_create),
+    path("sms/", views.sms_handler),
+    path("users/", views.user_list),  # ✅ Added route
 ]
