@@ -1,14 +1,16 @@
-# backend/api/views.py
-
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_GET
 from .models import Message, User
 from datetime import datetime
 from math import ceil
 import json
 
-# ✅ Fetch and create messages
+from django.db.models.functions import Trunc
+from django.db.models import Count
+
+
+# ✅ Fetch and create messages (GET for listing, POST for simulating)
 @csrf_exempt
 @require_http_methods(["GET", "POST"])
 def message_list_create(request):
@@ -45,7 +47,8 @@ def message_list_create(request):
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=400)
 
-# ✅ Handles SMS-based registration and commands
+
+# ✅ Handles incoming SMS commands like start#, details#, etc.
 @csrf_exempt
 @require_http_methods(["POST"])
 def sms_handler(request):
@@ -55,7 +58,7 @@ def sms_handler(request):
         content = data.get("content").strip()
         now = datetime.now()
 
-        # Save incoming message
+        # Save the incoming SMS
         Message.objects.create(
             message_from=message_from,
             message_to="System",
@@ -113,7 +116,6 @@ def sms_handler(request):
             )
 
         elif keyword == "match" and len(tokens) == 3:
-            # Matching logic placeholder
             response = "🔍 Searching for matches... (feature to be completed)"
 
         elif keyword == "describe" and len(tokens) == 2:
@@ -136,6 +138,7 @@ def sms_handler(request):
                 "start#Jane Doe#25#Female#Nairobi#Westlands"
             )
 
+        # Save system response
         Message.objects.create(
             message_from="System",
             message_to=message_from,
@@ -148,7 +151,8 @@ def sms_handler(request):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
 
-# ✅ NEW: Paginated users for /api/users/
+
+# ✅ Paginated user list
 @require_http_methods(["GET"])
 def user_list(request):
     try:
@@ -169,3 +173,61 @@ def user_list(request):
         })
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+
+
+# ✅ Chart: User growth per day
+@require_GET
+def user_growth(request):
+    data = (
+        User.objects
+        .filter(date_created__isnull=False)
+        .annotate(day=Trunc('date_created', 'day'))
+        .values('day')
+        .annotate(users=Count('id'))
+        .order_by('day')
+    )
+    formatted = [{"date": d["day"], "users": d["users"]} for d in data]
+    return JsonResponse(formatted, safe=False)
+
+
+# ✅ Chart: Message volume per day
+@require_GET
+def message_volume(request):
+    data = (
+        Message.objects
+        .filter(date_created__isnull=False)
+        .annotate(day=Trunc('date_created', 'day'))
+        .values('day')
+        .annotate(messages=Count('id'))
+        .order_by('day')
+    )
+    formatted = [{"date": d["day"], "messages": d["messages"]} for d in data]
+    return JsonResponse(formatted, safe=False)
+
+
+# ✅ Chart: Top counties by number of users
+@require_GET
+def top_counties(request):
+    data = (
+        User.objects
+        .exclude(county__isnull=True)
+        .exclude(county__exact='')
+        .values("county")
+        .annotate(users=Count("id"))
+        .order_by("-users")[:10]
+    )
+    return JsonResponse(list(data), safe=False)
+
+
+# ✅ Chart: Self-description volume (who described themselves)
+@require_GET
+def description_volume(request):
+    described = User.objects.filter(self_description__isnull=False).exclude(self_description="").count()
+    not_described = User.objects.filter(self_description__isnull=True) | User.objects.filter(self_description="")
+    not_described_count = not_described.count()
+
+    data = [
+        {"label": "Described", "count": described},
+        {"label": "Not Described", "count": not_described_count},
+    ]
+    return JsonResponse(data, safe=False)

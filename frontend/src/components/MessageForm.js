@@ -15,7 +15,7 @@ function MessageForm() {
 
   const fetchMessages = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/messages/");
+      const res = await axios.get("http://localhost:8000/api/sms/");
       setMessages(res.data);
     } catch (error) {
       console.error("Failed to fetch messages", error);

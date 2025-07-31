@@ -1,82 +1,86 @@
 // src/components/Sidebar.js
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
 
-const Sidebar = () => {
+import React from "react";
+import { Link, useLocation } from "react-router-dom";
+
+function Sidebar() {
   const location = useLocation();
+
   const navItems = [
-    { label: '📨 Messages', path: '/messages' },
-    { label: '👤 Users', path: '/users' },
-    { label: '📍 Tracking', path: '/tracking' },
-    { label: '💬 Simulate SMS', path: '/simulate' }
+    { name: "MESSAGES", path: "/messages" },
+    { name: "USERS", path: "/users" },
+    { name: "TRACKING", path: "/tracking" },
+    { name: "SIMULATE SMS", path: "/simulate" },
+    { name: "LOGISTICS", path: "/logistics" }, // ✅ New item
   ];
 
-  const logo = process.env.PUBLIC_URL + '/onfon.jpeg';
-
   return (
-    <div style={{
-      width: '250px',
-      height: '100vh',
-      backgroundColor: '#121212',
-      padding: '24px 20px',
-      boxShadow: '2px 0 6px rgba(0,0,0,0.3)',
-      color: '#fff',
-      display: 'flex',
-      flexDirection: 'column',
-    }}>
-      
-      {/* 🔷 Plain Zoomed Logo & Welcome Text */}
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        marginBottom: '35px'
-      }}>
-        <img
-          src={logo}
-          alt="Onfon Logo"
+    <div
+      style={{
+        width: "260px",
+        backgroundColor: "#2c2c2c",
+        color: "#fff",
+        height: "100vh",
+        padding: "20px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "20px",
+        boxShadow: "2px 0 5px rgba(0, 0, 0, 0.2)",
+      }}
+    >
+      {/* Moving Heading */}
+      <div style={{ overflow: "hidden", height: "50px", marginBottom: "40px" }}>
+        <div
           style={{
-            width: '60px',
-            height: '60px',
-            objectFit: 'cover', // zoom in
-            // Removed border radius & shadow
+            whiteSpace: "nowrap",
+            display: "inline-block",
+            animation: "slide-left 20s linear infinite",
+            fontWeight: "900",
+            fontSize: "22px",
+            color: "#4da6ff",
+            textTransform: "uppercase",
+            letterSpacing: "0.5px",
           }}
-        />
-        <p style={{
-          marginTop: '10px',
-          fontSize: '1rem',
-          fontWeight: 'bold',
-          letterSpacing: '1px',
-          color: '#ff99aa'
-        }}>
-          WELCOME ADMIN
-        </p>
+        >
+          Welcome to the Onfon Penzi SMS dating dashboard. What do you want to access today?
+        </div>
       </div>
 
-      {/* 🔷 Navigation */}
-      <ul style={{ listStyle: 'none', padding: 0, marginTop: '10px' }}>
-        {navItems.map((item, index) => (
-          <li key={index} style={{ marginBottom: '12px' }}>
-            <Link
-              to={item.path}
-              style={{
-                textDecoration: 'none',
-                color: location.pathname === item.path ? '#fff' : '#ccc',
-                backgroundColor: location.pathname === item.path ? '#ff4d6d' : 'transparent',
-                padding: '12px 18px',
-                display: 'block',
-                borderRadius: '8px',
-                fontWeight: '500',
-                transition: 'all 0.3s ease'
-              }}
-            >
-              {item.label}
-            </Link>
-          </li>
-        ))}
-      </ul>
+      {/* Navigation */}
+      {navItems.map((item) => (
+        <Link
+          key={item.path}
+          to={item.path}
+          style={{
+            color: location.pathname === item.path ? "#ff99aa" : "#fff",
+            textDecoration: "none",
+            padding: "10px 15px",
+            borderRadius: "6px",
+            backgroundColor:
+              location.pathname === item.path ? "#444" : "transparent",
+            fontWeight: "500",
+            transition: "all 0.2s ease",
+          }}
+        >
+          {item.name}
+        </Link>
+      ))}
+
+      {/* Keyframes */}
+      <style>
+        {`
+          @keyframes slide-left {
+            0% {
+              transform: translateX(100%);
+            }
+            100% {
+              transform: translateX(-100%);
+            }
+          }
+        `}
+      </style>
     </div>
   );
-};
+}
 
 export default Sidebar;

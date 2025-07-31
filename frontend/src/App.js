@@ -7,6 +7,7 @@ import MessageForm from "./components/MessageForm";
 import Users from "./components/Users";
 import Tracking from "./components/Tracking";
 import SimulateSMS from "./components/SimulateSMS";
+import Logistics from "./components/Logistics"; // ✅ New import
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/users" element={<Users />} />
         <Route path="/tracking" element={<Tracking />} />
         <Route path="/simulate" element={<SimulateSMS />} />
+        <Route path="/logistics" element={<Logistics />} /> {/* ✅ New Route */}
       </Route>
     </Routes>
   );

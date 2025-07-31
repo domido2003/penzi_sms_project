@@ -1,12 +1,15 @@
 import React from "react";
 import Sidebar from "./Sidebar";
+import Footer from "./footer";
 import { Outlet } from "react-router-dom";
 
 const Layout = () => {
   return (
     <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
       <Sidebar />
+
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+        {/* Header */}
         <header
           style={{
             backgroundColor: "#121212",
@@ -37,12 +40,27 @@ const Layout = () => {
               lineHeight: 1.2,
             }}
           >
-            Penzi SMS Admin Dashboard
+            ADMIN DASHBOARD
+        
           </h1>
         </header>
 
-        <div style={{ flex: 1, overflowY: "auto", background: "#fdfdfd" }}>
-          <Outlet />
+        {/* Main content + footer wrapper */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          {/* Scrollable content */}
+          <div
+            style={{
+              flex: 1,
+              overflowY: "auto",
+              padding: "20px",
+              backgroundColor: "#fdfdfd",
+            }}
+          >
+            <Outlet />
+          </div>
+
+          {/* Always visible footer */}
+          <Footer />
         </div>
       </div>
     </div>
