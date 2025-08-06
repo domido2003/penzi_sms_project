@@ -1,19 +1,22 @@
 from django.urls import path
-from . import views
+from rest_framework_simplejwt.views import TokenObtainPairView
+from .views import (
+    message_list_create,            # Function-based view for messages
+    SMSHandlerView,                 # Class-based view for processing SMS
+    UserListView,                   # JWT-protected CBV for user list
+    UserGrowthChart,                # Analytics views
+    MessageVolumeChart,
+    TopCountiesChart,
+    DescriptionVolumeChart,
+)
 
 urlpatterns = [
-    # Messages list & simulator
-    path("sms/", views.message_list_create, name="message_list_create"),
-
-    # SMS command handler
-    path("sms/handler/", views.sms_handler, name="sms_handler"),
-
-    # Paginated users list
-    path("users/", views.user_list, name="user_list"),
-
-    # Analytics for charts
-    path("stats/user-growth/", views.user_growth, name="user_growth"),
-    path("stats/message-volume/", views.message_volume, name="message_volume"),
-    path("stats/top-counties/", views.top_counties, name="top_counties"),
-    path("stats/description-volume/", views.description_volume, name="description_volume"),
+    path('messages/', message_list_create, name='message_list_create'),
+    path('sms/', SMSHandlerView.as_view(), name='sms_handler'),
+    path('users/', UserListView.as_view(), name='user_list'),
+    path('analytics/user-growth/', UserGrowthChart.as_view(), name='user_growth'),
+    path('analytics/message-volume/', MessageVolumeChart.as_view(), name='message_volume'),
+    path('analytics/top-counties/', TopCountiesChart.as_view(), name='top_counties'),
+    path('analytics/description-volume/', DescriptionVolumeChart.as_view(), name='description_volume'),
+    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
 ]

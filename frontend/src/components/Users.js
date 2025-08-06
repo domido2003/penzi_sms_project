@@ -1,188 +1,134 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+// src/pages/Users.js
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-const thStyle = {
-  borderBottom: "2px solid #ccc",
-  padding: "10px",
-  background: "#ffe6e6",
-  textAlign: "left",
-};
-
-const tdStyle = {
-  padding: "10px",
-  borderBottom: "1px solid #ddd",
-};
-
-const buttonStyle = {
-  padding: "8px 15px",
-  margin: "0 5px",
-  backgroundColor: "#b30000",
-  color: "white",
-  border: "none",
-  borderRadius: "5px",
-  cursor: "pointer",
-};
-
-const cardStyle = {
-  border: "1px solid #ccc",
-  padding: "15px",
-  borderRadius: "10px",
-  marginBottom: "15px",
-  backgroundColor: "#fff",
-  boxShadow: "0 0 5px rgba(0,0,0,0.1)",
-};
-
-const inputStyle = {
-  padding: "8px",
-  width: "100%",
-  maxWidth: "400px",
-  marginBottom: "20px",
-  borderRadius: "5px",
-  border: "1px solid #ccc",
-};
-
-const Users = () => {
+function Users() {
   const [users, setUsers] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(30);
   const [searchTerm, setSearchTerm] = useState("");
-  const [totalUsers, setTotalUsers] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    fetchUsers(currentPage);
-  }, [currentPage]);
+    fetchUsers();
+  }, [page, searchTerm]);
 
-  const fetchUsers = async (page) => {
+  const fetchUsers = async () => {
+    const token = localStorage.getItem("accessToken");
+
+    if (!token) {
+      console.warn("No access token found. Redirecting to login...");
+      navigate("/login");
+      return;
+    }
+
     try {
-      const res = await axios.get(`http://127.0.0.1:8000/api/users/?page=${page}`);
-      setUsers(res.data.users);
-      setFilteredUsers(res.data.users);
-      setTotalUsers(res.data.total_users);
-      setTotalPages(res.data.total_pages);
+      const response = await axios.get(
+        `http://localhost:8000/api/users/?page=${page}&search=${encodeURIComponent(searchTerm)}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setUsers(response.data.results || response.data);
+      setTotalCount(response.data.count || response.data.length);
     } catch (error) {
       console.error("❌ Failed to fetch users:", error);
+
+      if (error.response && error.response.status === 401) {
+        console.warn("Token rejected. Redirecting to login...");
+        navigate("/login");
+      }
     }
   };
 
-  useEffect(() => {
-    const lowerSearch = searchTerm.toLowerCase();
-    const filtered = users.filter(user =>
-      Object.values(user).some(value =>
-        String(value).toLowerCase().includes(lowerSearch)
-      )
-    );
-    setFilteredUsers(filtered);
-  }, [searchTerm, users]);
-
-  const handleNext = () => {
-    if (currentPage < totalPages) setCurrentPage(prev => prev + 1);
-  };
-
-  const handlePrevious = () => {
-    if (currentPage > 1) setCurrentPage(prev => prev - 1);
-  };
+  const totalPages = Math.ceil(totalCount / pageSize);
 
   return (
-    <div style={{ padding: "20px", background: "#fdf0f0", minHeight: "100vh" }}>
-      <h2 style={{ marginBottom: "10px", color: "#8B0000" }}>📋 Registered Users</h2>
-      <p>Total Users: <strong>{totalUsers}</strong></p>
+    <div className="container mt-4">
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h2>Registered Users</h2>
+        <input
+          type="text"
+          className="form-control w-25"
+          placeholder="Search by name or phone"
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setPage(1); // Reset to first page on new search
+          }}
+          onKeyPress={(e) => {
+            if (e.key === "Enter") fetchUsers();
+          }}
+        />
+      </div>
 
-      <input
-        type="text"
-        placeholder="🔍 Search users..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        style={inputStyle}
-      />
+      <p>Total Users: <strong>{totalCount}</strong></p>
 
-      {filteredUsers.length === 0 ? (
-        <p>No users found.</p>
-      ) : (
-        <>
-          {/* Desktop Table (shows on wide screens) */}
-          <div className="user-table" style={{ overflowX: "auto", marginBottom: "20px" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
-                <tr>
-                  <th style={thStyle}>Full Name</th>
-                  <th style={thStyle}>Phone</th>
-                  <th style={thStyle}>Age</th>
-                  <th style={thStyle}>Gender</th>
-                  <th style={thStyle}>County</th>
-                  <th style={thStyle}>Town</th>
-                  <th style={thStyle}>Education</th>
-                  <th style={thStyle}>Profession</th>
-                  <th style={thStyle}>Marital</th>
-                  <th style={thStyle}>Religion</th>
-                  <th style={thStyle}>Ethnicity</th>
-                  <th style={thStyle}>Description</th>
-                  <th style={thStyle}>Date Joined</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredUsers.map((user, index) => (
-                  <tr key={index}>
-                    <td style={tdStyle}>{user.full_name}</td>
-                    <td style={tdStyle}>{user.phone_number}</td>
-                    <td style={tdStyle}>{user.age}</td>
-                    <td style={tdStyle}>{user.gender}</td>
-                    <td style={tdStyle}>{user.county}</td>
-                    <td style={tdStyle}>{user.town}</td>
-                    <td style={tdStyle}>{user.education_level}</td>
-                    <td style={tdStyle}>{user.profession}</td>
-                    <td style={tdStyle}>{user.marital_status}</td>
-                    <td style={tdStyle}>{user.religion}</td>
-                    <td style={tdStyle}>{user.ethnicity}</td>
-                    <td style={tdStyle}>{user.self_description}</td>
-                    <td style={tdStyle}>
-                      {new Date(user.date_created).toLocaleDateString("en-GB", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Mobile Card view (optional) */}
-          <div className="card-container" style={{ display: "none" }}>
-            {filteredUsers.map((user, index) => (
-              <div key={index} style={cardStyle}>
-                <p><strong>Name:</strong> {user.full_name}</p>
-                <p><strong>Phone:</strong> {user.phone_number}</p>
-                <p><strong>Age:</strong> {user.age}</p>
-                <p><strong>Gender:</strong> {user.gender}</p>
-                <p><strong>County:</strong> {user.county}</p>
-                <p><strong>Town:</strong> {user.town}</p>
-                <p><strong>Education:</strong> {user.education_level}</p>
-                <p><strong>Profession:</strong> {user.profession}</p>
-                <p><strong>Marital:</strong> {user.marital_status}</p>
-                <p><strong>Religion:</strong> {user.religion}</p>
-                <p><strong>Ethnicity:</strong> {user.ethnicity}</p>
-                <p><strong>Description:</strong> {user.self_description}</p>
-                <p><strong>Date Joined:</strong> {new Date(user.date_created).toLocaleDateString("en-GB", {
-                  day: "2-digit",
-                  month: "short",
-                  year: "numeric",
-                })}</p>
-              </div>
+      <div className="table-responsive">
+        <table className="table table-striped table-bordered table-sm">
+          <thead className="table-dark">
+            <tr>
+              <th>ID</th>
+              <th>Full Name</th>
+              <th>Phone</th>
+              <th>Age</th>
+              <th>Gender</th>
+              <th>County</th>
+              <th>Town</th>
+              <th>Education</th>
+              <th>Profession</th>
+              <th>Marital</th>
+              <th>Religion</th>
+              <th>Ethnicity</th>
+              <th>Joined</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.map((user) => (
+              <tr key={user.id}>
+                <td>{user.id}</td>
+                <td>{user.full_name}</td>
+                <td>{user.phone_number}</td>
+                <td>{user.age}</td>
+                <td>{user.gender}</td>
+                <td>{user.county}</td>
+                <td>{user.town}</td>
+                <td>{user.education_level}</td>
+                <td>{user.profession}</td>
+                <td>{user.marital_status}</td>
+                <td>{user.religion}</td>
+                <td>{user.ethnicity}</td>
+                <td>{new Date(user.date_created).toLocaleDateString()}</td>
+              </tr>
             ))}
-          </div>
-        </>
-      )}
+          </tbody>
+        </table>
+      </div>
 
-      {/* Pagination */}
-      <div style={{ marginTop: "20px" }}>
-        <button onClick={handlePrevious} disabled={currentPage === 1} style={buttonStyle}>⬅ Prev</button>
-        <span style={{ margin: "0 15px" }}>Page {currentPage} of {totalPages}</span>
-        <button onClick={handleNext} disabled={currentPage === totalPages} style={buttonStyle}>Next ➡</button>
+      <div className="d-flex justify-content-between mt-3">
+        <button
+          className="btn btn-secondary"
+          onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+          disabled={page === 1}
+        >
+          Previous
+        </button>
+        <span>Page {page} of {totalPages}</span>
+        <button
+          className="btn btn-secondary"
+          onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+          disabled={page === totalPages}
+        >
+          Next
+        </button>
       </div>
     </div>
   );
-};
+}
 
 export default Users;

@@ -106,9 +106,11 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.AllowAny',  # Change to IsAuthenticated if you want all views protected
+        'rest_framework.permissions.IsAuthenticated',
     )
 }
+
+
 
 # ✅ Optional: Set JWT settings (like token lifetime)
 from datetime import timedelta
