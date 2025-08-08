@@ -1,5 +1,3 @@
-// src/App.js
-
 import React from "react";
 import { Routes, Route, BrowserRouter } from "react-router-dom";
 import Layout from "./components/layout";
@@ -8,30 +6,22 @@ import Users from "./components/Users";
 import Tracking from "./components/Tracking";
 import SimulateSMS from "./components/SimulateSMS";
 import Logistics from "./components/Logistics";
-import Login from "./components/Login"; // ✅ Import login
-import PrivateRoute from "./components/PrivateRoute"; // ✅ Import guard
+// Removed Login and PrivateRoute imports since login is not needed
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public route */}
-        <Route path="/login" element={<Login />} />
+        {/* No login route needed */}
 
-        {/* Protected routes */}
-        <Route
-          path="/"
-          element={
-            <PrivateRoute>
-              <Layout />
-            </PrivateRoute>
-          }
-        >
+        {/* Public routes - no PrivateRoute wrapping */}
+        <Route path="/" element={<Layout />}>
           <Route path="messages" element={<MessageForm />} />
           <Route path="users" element={<Users />} />
           <Route path="tracking" element={<Tracking />} />
           <Route path="simulate" element={<SimulateSMS />} />
           <Route path="logistics" element={<Logistics />} />
+          {/* Optionally, add index route to redirect or render a default component */}
         </Route>
       </Routes>
     </BrowserRouter>

@@ -1,12 +1,13 @@
-version: '3.9'
-
 services:
   backend:
     build:
       context: ./backend
+      dockerfile: Dockerfile
+    container_name: django-backend
+    command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings
     volumes:
       - ./backend:/app
     ports:
       - "8000:8000"
-    environment:
-      - DEBUG=True

@@ -1,7 +1,5 @@
-// src/pages/Users.js
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 
 function Users() {
   const [users, setUsers] = useState([]);
@@ -9,44 +7,33 @@ function Users() {
   const [page, setPage] = useState(1);
   const [pageSize] = useState(30);
   const [searchTerm, setSearchTerm] = useState("");
-  const navigate = useNavigate();
 
   useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:8000/api/users/?page=${page}&search=${encodeURIComponent(searchTerm)}`
+        );
+
+        const data = response.data;
+
+        if (Array.isArray(data)) {
+          setUsers(data);
+          setTotalCount(data.length);
+        } else {
+          setUsers(data.results || []);
+          setTotalCount(data.count || 0);
+        }
+      } catch (error) {
+        console.error("❌ Failed to fetch users:", error);
+        // No redirect, just show error in console for now
+      }
+    };
+
     fetchUsers();
   }, [page, searchTerm]);
 
-  const fetchUsers = async () => {
-    const token = localStorage.getItem("accessToken");
-
-    if (!token) {
-      console.warn("No access token found. Redirecting to login...");
-      navigate("/login");
-      return;
-    }
-
-    try {
-      const response = await axios.get(
-        `http://localhost:8000/api/users/?page=${page}&search=${encodeURIComponent(searchTerm)}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      setUsers(response.data.results || response.data);
-      setTotalCount(response.data.count || response.data.length);
-    } catch (error) {
-      console.error("❌ Failed to fetch users:", error);
-
-      if (error.response && error.response.status === 401) {
-        console.warn("Token rejected. Redirecting to login...");
-        navigate("/login");
-      }
-    }
-  };
-
-  const totalPages = Math.ceil(totalCount / pageSize);
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
   return (
     <div className="container mt-4">
@@ -59,10 +46,12 @@ function Users() {
           value={searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);
-            setPage(1); // Reset to first page on new search
+            setPage(1);
           }}
           onKeyPress={(e) => {
-            if (e.key === "Enter") fetchUsers();
+            if (e.key === "Enter") {
+              // No manual fetch needed; useEffect triggers fetch on searchTerm change
+            }
           }}
         />
       </div>

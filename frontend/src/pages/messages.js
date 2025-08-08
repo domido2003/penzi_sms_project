@@ -4,31 +4,31 @@ import { useNavigate } from "react-router-dom";
 
 function Messages() {
   const [messages, setMessages] = useState([]);
-  const navigate = useNavigate();
+  //const navigate = useNavigate();
 
   useEffect(() => {
     fetchMessages();
   }, []);
 
   const fetchMessages = async () => {
-    const token = localStorage.getItem("accessToken");
-    if (!token) {
-      navigate("/login");
-      return;
-    }
+    // const token = localStorage.getItem("accessToken");
+    // if (!token) {
+    //   navigate("/login");
+    //   return;
+    // }
 
     try {
-      const response = await axios.get("http://127.0.0.1:8000/api/messages/", {
+      const response = await axios.get("http://127.0.0.1:8000/api/messages/" /*, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      });
+      }*/);
       setMessages(response.data);
     } catch (error) {
       console.error("❌ Failed to fetch messages:", error);
-      if (error.response && error.response.status === 401) {
-        navigate("/login");
-      }
+      // if (error.response && error.response.status === 401) {
+      //   navigate("/login");
+      // }
     }
   };
 

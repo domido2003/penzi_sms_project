@@ -1,18 +1,21 @@
-# Use the official Python image
-FROM python:3.11-slim
+FROM python:3.11
 
-# Set the working directory inside the container
 WORKDIR /app
 
-# Copy all backend files into the container
-COPY . .
+RUN apt-get update && apt-get install -y \
+    default-libmysqlclient-dev \
+    gcc \
+    libmariadb-dev \
+    netcat-openbsd \
+    && apt-get clean
 
-# Upgrade pip and install dependencies
+COPY requirements.txt /app/
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
-# Expose port 8000 for Django
-EXPOSE 8000
+COPY . /app/
 
-# Start Django server
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Don't do this: wait-for-it.sh is NOT copied here during build
+# RUN chmod +x /wait-for-it.sh
+
+CMD ["/wait-for-it.sh", "db:3306", "--", "python", "manage.py", "runserver", "0.0.0.0:8000"]

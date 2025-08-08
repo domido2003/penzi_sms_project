@@ -1,0 +1,31 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Editor/IDE junk
+.vscode/
+.idea/
+*.swp
+*.bak
+*.tmp
+.DS_Store
+
+# Environment/config
+.env
+.env.*
+*.log
+
+# Database files (if using SQLite locally)
+*.db
+*.sqlite3
+
+# Docker artifacts
+Dockerfile
+.dockerignore
+
+# Build/test folders
+build/
+dist/
+node_modules/  # Just in case someone accidentally copies frontend stuff

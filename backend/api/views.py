@@ -2,26 +2,25 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.utils import timezone
-from django.db.models import Count
+from django.db.models import Count, Q
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.decorators import api_view, permission_classes
+# from rest_framework.permissions import IsAuthenticated, AllowAny  # Commented out since disabling auth
+from rest_framework.decorators import api_view  # no permission_classes decorator needed now
 from rest_framework.pagination import PageNumberPagination
 
 from .models import Message, User, MatchTracking
-
 import json
 from datetime import datetime
-from datetime import datetime
-from django.db.models import Q
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
 def user_list_view(request):
-    ...
+    # This view was empty before; likely replaced by UserListView CBV
+    # You can leave it as pass or implement if used anywhere
+    pass
+
 
 @csrf_exempt
 @require_http_methods(["GET", "POST"])
@@ -54,8 +53,9 @@ def message_list_create(request):
         )
         return JsonResponse(messages, safe=False)
 
+
 class SMSHandlerView(APIView):
-    permission_classes = [AllowAny]
+    # permission_classes = [AllowAny]  # Disabled auth
 
     def post(self, request):
         try:
@@ -78,8 +78,9 @@ class SMSHandlerView(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=400)
 
+
 class UserListView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]  # Disabled auth
 
     def get(self, request):
         paginator = PageNumberPagination()
@@ -115,6 +116,7 @@ class UserGrowthChart(APIView):
         )
         return Response(users_by_day)
 
+
 class MessageVolumeChart(APIView):
     def get(self, request):
         messages_by_day = (
@@ -125,6 +127,7 @@ class MessageVolumeChart(APIView):
         )
         return Response(messages_by_day)
 
+
 class TopCountiesChart(APIView):
     def get(self, request):
         counties = (
@@ -133,6 +136,7 @@ class TopCountiesChart(APIView):
             .order_by("-count")[:10]
         )
         return Response(counties)
+
 
 class DescriptionVolumeChart(APIView):
     def get(self, request):
@@ -145,6 +149,7 @@ class DescriptionVolumeChart(APIView):
             .order_by("day")
         )
         return Response(desc_stats)
+
 
 # ---------------------------- SMS Command Handlers ----------------------------
 
@@ -169,6 +174,7 @@ def handle_sms_command(sender, content):
         return handle_profile_request(sender, content)
     else:
         return "Sorry, invalid command. Send HELP for assistance."
+
 
 def handle_start(sender, content):
     try:
@@ -195,6 +201,7 @@ def handle_start(sender, content):
     except Exception as e:
         return f"Failed to register. Ensure correct format: start#name#age#gender#county#town. Error: {e}"
 
+
 def handle_details(sender, content):
     try:
         _, education, profession, marital_status, religion, ethnicity = content.split("#")
@@ -216,6 +223,7 @@ def handle_details(sender, content):
     except Exception as e:
         return f"Failed to update details. Ensure correct format: details#... Error: {e}"
 
+
 def handle_myself(sender, content):
     try:
         _, description = content.split("#", 1)
@@ -230,6 +238,7 @@ def handle_myself(sender, content):
         return "Description saved. To request a match, send: match#"
     except Exception as e:
         return f"Failed to save description. Format: myself#description. Error: {e}"
+
 
 def handle_match(sender):
     try:
@@ -253,8 +262,10 @@ def handle_match(sender):
     except Exception as e:
         return f"Error finding match: {e}"
 
+
 def handle_next(sender):
     return handle_match(sender)
+
 
 def handle_describe(sender, content):
     try:
@@ -279,6 +290,7 @@ def handle_describe(sender, content):
         return "User not found."
     except Exception as e:
         return f"Failed to describe: {e}"
+
 
 def handle_yes(sender):
     try:
@@ -305,6 +317,7 @@ def handle_yes(sender):
     except Exception as e:
         return f"Error confirming interest: {e}"
 
+
 def handle_profile_request(sender, content):
     try:
         number = content.strip()
@@ -326,3 +339,4 @@ def handle_profile_request(sender, content):
         return "Profile sent."
     except User.DoesNotExist:
         return "User not found."
+

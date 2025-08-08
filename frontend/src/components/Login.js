@@ -1,57 +1,36 @@
-import React, { useState } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import React from "react";
 
 function Login() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const navigate = useNavigate();
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post(
-        "http://localhost:8000/api/token/",
-        { username, password }
-      );
-      localStorage.setItem("accessToken", response.data.access);
-      navigate("/users");
-    } catch (err) {
-      console.error("Login failed:", err);
-      setError("Invalid credentials, please try again.");
-    }
-  };
-
   return (
-    <div className="container mt-5">
-      <h2>Login</h2>
-      <form onSubmit={handleLogin}>
-        {error && <div className="alert alert-danger">{error}</div>}
-        <div className="mb-3">
-          <label className="form-label">Username</label>
-          <input
-            type="text"
-            className="form-control"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
+    <div
+      className="d-flex flex-column justify-content-center align-items-center vh-100"
+      style={{ backgroundColor: "#ffe6f0" }}
+    >
+      <div
+        className="p-5 rounded shadow-lg text-center"
+        style={{ maxWidth: "400px", backgroundColor: "#fff" }}
+      >
+        <h2 className="mb-4" style={{ color: "#c71585" }}>
+          Login Disabled
+        </h2>
+        <p className="mb-3" style={{ color: "#333", fontSize: "1.1rem" }}>
+          The login functionality has been temporarily disabled for maintenance.
+        </p>
+        <p style={{ color: "#555" }}>
+          Please check back later or contact the administrator if you need access.
+        </p>
+        <div
+          className="mt-4"
+          style={{
+            fontSize: "4rem",
+            color: "#c71585",
+            userSelect: "none",
+          }}
+          aria-hidden="true"
+        >
+          💔
         </div>
-        <div className="mb-3">
-          <label className="form-label">Password</label>
-          <input
-            type="password"
-            className="form-control"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        <button type="submit" className="btn btn-primary">
-          Log In
-        </button>
-      </form>
+      </div>
     </div>
   );
 }

@@ -1,27 +1,15 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 
 function MessageForm() {
   const [messageFrom, setMessageFrom] = useState("");
   const [content, setContent] = useState("");
   const [messages, setMessages] = useState([]);
   const [responseMessage, setResponseMessage] = useState("");
-  const navigate = useNavigate();
 
   const fetchMessages = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-      return;
-    }
-
     try {
-      const response = await axios.get("http://localhost:8000/api/messages/", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axios.get("http://localhost:8000/api/messages/");
       setMessages(response.data);
     } catch (error) {
       console.error("❌ Failed to fetch messages", error);
@@ -30,25 +18,12 @@ function MessageForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-      return;
-    }
 
     try {
-      const response = await axios.post(
-        "http://localhost:8000/api/messages/",
-        {
-          message_from: messageFrom,
-          content: content,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await axios.post("http://localhost:8000/api/messages/", {
+        message_from: messageFrom,
+        content: content,
+      });
       setResponseMessage(response.data.message);
       setMessageFrom("");
       setContent("");
@@ -105,12 +80,14 @@ function MessageForm() {
         <ul className="list-group">
           {messages.map((msg) => (
             <li key={msg.id} className="list-group-item">
-              <strong>{msg.direction === "inbound" ? "From" : "To"}:</strong>{" "}
+              <strong>{msg.direction === "INCOMING" ? "From" : "To"}:</strong>{" "}
               {msg.message_from || msg.message_to}
               <br />
               <strong>Message:</strong> {msg.content}
               <br />
-              <small className="text-muted">{msg.date_created}</small>
+              <small className="text-muted">
+                {new Date(msg.date_created).toLocaleString()}
+              </small>
             </li>
           ))}
         </ul>

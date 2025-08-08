@@ -1,0 +1,12 @@
+node_modules
+build
+Dockerfile
+.dockerignore
+.env
+*.log
+*.tmp
+*.swp
+*.bak
+*.DS_Store
+.vscode
+.idea
