@@ -22,8 +22,12 @@ class User(models.Model):
         db_table = 'users'
         managed = False
 
+    def __str__(self):
+        return f"{self.full_name} ({self.phone_number})"
+
 
 class Message(models.Model):
+    id = models.AutoField(primary_key=True)
     message_from = models.CharField(max_length=20)
     message_to = models.CharField(max_length=20)
     content = models.TextField()
@@ -34,13 +38,19 @@ class Message(models.Model):
         db_table = 'messages'
         managed = False
 
+    def __str__(self):
+        return f"{self.direction}: {self.message_from} -> {self.message_to} @ {self.date_created}"
+
 
 class MatchTracking(models.Model):
     id = models.AutoField(primary_key=True)
     phone_number = models.CharField(max_length=20)
-    seen_count = models.IntegerField()
+    seen_count = models.IntegerField(default=0)
     last_updated = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         db_table = 'match_tracking'
         managed = False
+
+    def __str__(self):
+        return f"{self.phone_number} (seen: {self.seen_count})"

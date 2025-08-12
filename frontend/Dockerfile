@@ -1,16 +1,18 @@
-# Use official Node image
+# Use Node.js for development
 FROM node:18
 
-# Set working directory
+# Set working directory inside container
 WORKDIR /app
 
-# Install dependencies
-COPY package.json ./
-COPY package-lock.json ./
+# Install dependencies first (cache layer)
+COPY package.json package-lock.json ./
 RUN npm install
 
-# Copy all other frontend files
+# Copy the rest of the app
 COPY . .
 
-# Start the app
+# Expose React development port
+EXPOSE 3000
+
+# Run development server
 CMD ["npm", "start"]
